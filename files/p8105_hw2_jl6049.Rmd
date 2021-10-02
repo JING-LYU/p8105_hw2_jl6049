@@ -60,10 +60,103 @@ summary(Trash_data)
 skimr::skim(Trash_data)%>%
   select(numeric.mean)
 
+sum(select(filter(Pre_combine,year == 2018),total))
+
+median(pull(filter(Trash_data,year == 2019),sports_balls))
 ```
 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019?
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019???????
 
-For the first sheet "Mr. Trash Wheel", we could got `r nrow(Trash_data)` observations of dumpster
+For the first dataset "Mr. Trash Wheel", we could got `r nrow(Trash_data)` observations of dumpster and `r ncol(Trash_data)` dimensions to evaluate the data. Accordingly, the key variables are `r names(Trash_data)` .  The median number of sports balls in a dumpster in 2019 is `r median(pull(filter(Trash_data,year == 2019),sports_balls))`
+
+For the second dataset "precipitation data", we could got `r nrow(Pre_combine)` observations of dumpster and `r ncol(Pre_combine)` dimensions to evaluate the data. Accordingly, the key variables are `r names(Pre_combine)`. In this dataset, we could got `r nrow(Pre_2018_data)` data from 2018 and `r nrow(Pre_2019_data)` data from 2019. The total precipitation in 2018 is `r sum(select(filter(Pre_combine,year == 2018),total))`.
+
+
+## Problem 2
+
+This problem uses the FiveThirtyEight data; these data were gathered to create the interactive graphic on this page. In particular, we’ll use the data in pols-month.csv, unemployment.csv, and snp.csv. Our goal is to merge these into a single data frame using year and month as keys across datasets.
+
+First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name;
+create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
+
+???president_values
+
+```{r}
+pols_month = 
+  read_csv("../data/fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(mon, into = c("year", "month", "day"), sep = '-') %>%
+  pivot_longer(
+    c(prez_dem,prez_gop),
+    names_to = "president", 
+    names_prefix = "prez_",
+    values_to = "president_values") %>%
+  mutate(month = as.numeric(month)) %>%
+  select(-day)
+
+  
+```
+
+
+Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+
+```{r}
+snp = 
+  read_csv("../data/fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>%
+  separate(date, into = c("month", "day", "year"), sep = '/') %>%
+  mutate(month = as.numeric(month)) %>%
+  select(-day)
+
+  
+  
+  
+a = mutate(filter(snp, year >= 22), year = paste0("19",year) )
+b = mutate(filter(snp, year < 22), year = paste0("20",year) )
+
+snp = bind_rows(a, b) %>%
+  arrange(year,month) %>%
+  relocate(year, month) 
+  
+
+
+
+  
+```
+Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+
+```{r}
+mo2Num = function(x) match(tolower(x), tolower(month.abb))
+
+
+unemployment = 
+  read_csv("../data/fivethirtyeight_datasets/unemployment.csv") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    jan:dec,
+    names_to = "month", 
+    values_to = "unemployment")%>%
+  mutate(month = mo2Num(month))%>%
+  mutate(year = as.character(year))
+```
+
+Join the datasets by merging snp into pols, and merging unemployment into the result.
+
+```{r}
+result = left_join(pols_month, snp)
+result = left_join(result, unemployment)
+```
+
+Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+
+
+
+
+
+Note: we could have used a date variable as a key instead of creating year and month keys; doing so would help with some kinds of plotting, and be a more accurate representation of the data. Date formats are tricky, though. For more information check out the lubridate package in the tidyverse.
+
+
+
+
 
 
