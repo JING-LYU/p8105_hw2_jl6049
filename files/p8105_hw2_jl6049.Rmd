@@ -9,9 +9,13 @@ output: github_document
 
 Read and clean the Mr. Trash Wheel sheet:
 
-```{r}
+```{r include = FALSE}
 library(tidyverse)
 library(readxl)
+```
+
+
+```{r}
 Trash_data = 
   read_excel("../data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N408") %>%
   janitor::clean_names()%>%
@@ -79,7 +83,7 @@ This problem uses the FiveThirtyEight data; these data were gathered to create t
 First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name;
 create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 
-???president_values
+
 
 ```{r}
 pols_month = 
@@ -91,8 +95,9 @@ pols_month =
     names_to = "president", 
     names_prefix = "prez_",
     values_to = "president_values") %>%
+  filter(president_values == 1) %>%
   mutate(month = as.numeric(month)) %>%
-  select(-day)
+  select(-day,-president_values)
 
   
 ```
@@ -150,10 +155,85 @@ result = left_join(result, unemployment)
 Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
 
 
+The fisrt dataset pols-month contains `r nrow(pols_month)` observations of dumpster and `r ncol(pols_month)` dimensions including `r names(pols_month)` to show the number of national politicians who are democratic or republican at any given time.
+
+The second dataset snp contains `r nrow(snp)` observations of dumpster and `r ncol(snp)` dimensions including `r names(snp)` to record the closing values of the S&P stock index on the associated date
+
+The third dataset unemployment contains `r nrow(unemployment)` observations of dumpster and `r ncol(unemployment)` dimensions including `r names(unemployment)` to record the percentage of unemployment on the associated month
+
+
+## Problem 3
+
+This problem uses data from NYC Open data on the popularity of baby names, and can be downloaded here.
+
+Load and tidy the data. Note that, although these data may seem fairly well formatted initially, the names of a categorical predictor and the case structure of string variables changed over time; you’ll need to address this in your data cleaning. Also, some rows seem duplicated, and these will need to be removed (hint: google something like “dplyr remove duplicate rows” to get started).
+
+```{r}
+
+baby_names = 
+  read_csv("../data/popularity of baby names.csv") %>%
+  janitor::clean_names() %>% 
+  distinct() %>%
+  mutate(ethnicity = recode(ethnicity, "ASIAN AND PACI" = "ASIAN AND PACIFIC ISLANDER"),
+         ethnicity = recode(ethnicity, "WHITE NON HISP" = "WHITE NON HISPANIC"),
+         ethnicity = recode(ethnicity, "BLACK NON HISP" = "BLACK NON HISPANIC"),
+         childs_first_name =  str_to_title(childs_first_name),
+         ) 
+  
+distinct(baby_names,gender)  
+  
+
+```
+
+
+Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year. Produce a similar table showing the most popular name among male children over time.??????
+```{r}
+
+Olivia_rank = 
+  pivot_wider(
+  filter(select(baby_names,-gender,-count), childs_first_name == "Olivia" ), 
+  names_from = "year_of_birth", 
+  values_from = "rank") %>%
+  select(-childs_first_name)
+  
 
 
 
-Note: we could have used a date variable as a key instead of creating year and month keys; doing so would help with some kinds of plotting, and be a more accurate representation of the data. Date formats are tricky, though. For more information check out the lubridate package in the tidyverse.
+popular_male = 
+  pivot_wider(
+  filter(select(baby_names,-count), rank == 1 & gender == "MALE"), 
+  names_from = "year_of_birth", 
+  values_from = "childs_first_name") %>%
+  select(-gender,-rank)
+
+  
+
+```
+
+
+Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
+
+```{r}
+
+
+plot_data = 
+  filter(baby_names, year_of_birth == 2016 & gender == "MALE" & ethnicity == "WHITE NON HISPANIC")
+  
+x = pull(plot_data, rank)
+y = pull(plot_data, count)
+
+ggplot(plot_data, aes(x = rank, y = count)) + geom_point() +  labs(title = "Name ranks of male white non-hispanic children born in 2016" , x = "Rank" , y = "Count of Name")
+
+  
+  pivot_wider(
+  filter(select(baby_names,-count), rank == 1 & gender == "MALE"), 
+  names_from = "year_of_birth", 
+  values_from = "childs_first_name") %>%
+  select(-gender,-rank)
+
+  
+
+```
 
 
 
