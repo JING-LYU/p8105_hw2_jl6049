@@ -76,12 +76,20 @@ For the second dataset "precipitation data", we could got `r nrow(Pre_combine)` 
 
 **1. Clean the data in pols-month.csv**
 
+PS: By observing the dataset, we find out that the data in prez_gop has some mistake : from 1974-08-15 to 1974-12-15, the value in prez_gop is 2 rather than 1. Considering that the prez_dem is 0 during 1974, we could tell that prez_gop should be 1, which means that the president was republican. So I do a cleaning at the first step.
+
 ```{r message = FALSE}
 pols_month = 
   read_csv("../data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>%
+  mutate(prez_gop = recode(prez_gop, "2" = 1)) %>%
+  
   # break up the variable mon into integer variables year, month, and day; replace month number with month name;
   separate(mon, into = c("year", "month", "day"), sep = '-') %>%
+  mutate(month = as.integer(month),
+         year = as.integer(year),
+         day = as.integer(day)
+         ) %>%
   # create a president variable taking values gop and dem, and remove prez_dem and prez_gop; 
   pivot_longer(
     c(prez_dem,prez_gop),
@@ -89,11 +97,9 @@ pols_month =
     names_prefix = "prez_",
     values_to = "president_values") %>%
   filter(president_values == 1) %>%
-  mutate(month = as.numeric(month)) %>%
   # remove the day variable
   select(-day,-president_values)
 
-  
 ```
 
 
@@ -104,7 +110,8 @@ snp =
   read_csv("../data/fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>%
   separate(date, into = c("month", "day", "year"), sep = '/') %>%
-  mutate(month = as.numeric(month)) %>%
+  mutate(month = as.integer(month),
+         year = as.integer(year) ) %>%
   select(-day)
 
 # modify the structure of year
@@ -113,7 +120,8 @@ b = mutate(filter(snp, year < 22), year = paste0("20",year) )
 
 snp = bind_rows(a, b) %>%
   # arrange according to year and month
-  arrange(year,month) %>%
+  arrange(year,month) %>% 
+  mutate(year = as.integer(year) ) %>%
   # let year and month become leading columns
   relocate(year, month) 
   
@@ -138,7 +146,7 @@ unemployment =
     values_to = "unemployment")%>%
   # change the format of month
   mutate(month = mo2Num(month))%>%
-  mutate(year = as.character(year))
+  mutate(year = as.integer(year))
 ```
 
 **4. Join the datasets by merging snp into pols, and merging unemployment into the result.**
@@ -146,6 +154,8 @@ unemployment =
 ```{r}
 result = left_join(pols_month, snp)
 result = left_join(result, unemployment)
+
+### check this table later
 ```
 
 **5. Short paragraph about these datasets**
