@@ -76,12 +76,14 @@ For the second dataset "precipitation data", we could got `r nrow(Pre_combine)` 
 
 **1. Clean the data in pols-month.csv**
 
-PS: By observing the dataset, we find out that the data in prez_gop has some mistake : from 1974-08-15 to 1974-12-15, the value in prez_gop is 2 rather than 1. Considering that the prez_dem is 0 during 1974, we could tell that prez_gop should be 1, which means that the president was republican. So I do a cleaning at the first step.
+*PS: By observing the dataset, we find out that the data in prez_gop has some mistake : from 1974-08-15 to 1974-12-15, the value in prez_gop is 2 rather than 1. Considering that the prez_dem is 0 during 1974, we could tell that prez_gop should be 1, which means that the president was republican. So I do a cleaning at the first step.*
 
 ```{r message = FALSE}
 pols_month = 
   read_csv("../data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>%
+  
+  # Change the mistake of prez_gop
   mutate(prez_gop = recode(prez_gop, "2" = 1)) %>%
   
   # break up the variable mon into integer variables year, month, and day; replace month number with month name;
@@ -155,7 +157,6 @@ unemployment =
 result = left_join(pols_month, snp)
 result = left_join(result, unemployment)
 
-### check this table later
 ```
 
 **5. Short paragraph about these datasets**
