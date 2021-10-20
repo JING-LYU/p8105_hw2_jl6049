@@ -58,9 +58,9 @@ Pre_2018_data =
 ```{r}
 Pre_combine = 
   # Combine precipitation datasets
-  bind_rows(Pre_2018_data, Pre_2019_data)%>%
+  bind_rows(Pre_2018_data, Pre_2019_data) %>%
   # convert month to a character variable
-  mutate(month = month.name[month])%>%
+  mutate(month = month.name[month]) %>%
   select(year, month, total)
 
 ```
@@ -89,6 +89,7 @@ pols_month =
   # break up the variable mon into integer variables year, month, and day; replace month number with month name;
   separate(mon, into = c("year", "month", "day"), sep = '-') %>%
   mutate(month = as.integer(month),
+         month = month.name[month],
          year = as.integer(year),
          day = as.integer(day)
          ) %>%
@@ -113,6 +114,7 @@ snp =
   janitor::clean_names() %>%
   separate(date, into = c("month", "day", "year"), sep = '/') %>%
   mutate(month = as.integer(month),
+         month = month.name[month],
          year = as.integer(year) ) %>%
   select(-day)
 
@@ -147,7 +149,8 @@ unemployment =
     names_to = "month", 
     values_to = "unemployment")%>%
   # change the format of month
-  mutate(month = mo2Num(month))%>%
+  mutate(month = mo2Num(month),
+         month = month.name[month]) %>%
   mutate(year = as.integer(year))
 ```
 
@@ -156,7 +159,7 @@ unemployment =
 ```{r}
 result = left_join(pols_month, snp)
 result = left_join(result, unemployment)
-
+result
 ```
 
 **5. Short paragraph about these datasets**
@@ -199,6 +202,8 @@ Olivia_rank =
   names_from = "year_of_birth", 
   values_from = "rank") %>%
   select(-childs_first_name)
+
+Olivia_rank
 ```
 
 **3. Produce a similar table showing the most popular name among male children over time**
@@ -211,6 +216,8 @@ popular_male =
   names_from = "year_of_birth", 
   values_from = "childs_first_name") %>%
   select(-gender,-rank)
+
+
 ```
 
 **4. For male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis)**
