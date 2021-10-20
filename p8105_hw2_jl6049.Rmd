@@ -18,7 +18,7 @@ library(readxl)
 ```{r}
 Trash_data = 
   #specify the sheet in the Excel file and omit non-data entries using arguments in read_excel
-  read_excel("../data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N408") %>%
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N408") %>%
   # use reasonable variable names
   janitor::clean_names()%>%
   # omit rows that do not include dumpster-specific data
@@ -34,7 +34,7 @@ Trash_data =
 ```{r}
 
 Pre_2019_data = 
-  read_excel("../data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2019 Precipitation", skip = 1)%>%
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "2019 Precipitation", skip = 1) %>%
   # use reasonable variable names
   janitor::clean_names()%>%
   # omit rows that do not include dumpster-specific data
@@ -44,7 +44,7 @@ Pre_2019_data =
 
 
 Pre_2018_data = 
-  read_excel("../data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", skip = 1)%>%
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "2018 Precipitation", skip = 1)%>%
   # use reasonable variable names
   janitor::clean_names()%>%
   # omit rows that do not include dumpster-specific data
@@ -80,7 +80,7 @@ For the second dataset "precipitation data", we could got `r nrow(Pre_combine)` 
 
 ```{r message = FALSE}
 pols_month = 
-  read_csv("../data/fivethirtyeight_datasets/pols-month.csv") %>%
+  read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>%
   
   # Change the mistake of prez_gop
@@ -109,7 +109,7 @@ pols_month =
 
 ```{r message = FALSE}
 snp = 
-  read_csv("../data/fivethirtyeight_datasets/snp.csv") %>%
+  read_csv("data/fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>%
   separate(date, into = c("month", "day", "year"), sep = '/') %>%
   mutate(month = as.integer(month),
@@ -139,7 +139,7 @@ snp = bind_rows(a, b) %>%
 mo2Num = function(x) match(tolower(x), tolower(month.abb))
 
 unemployment = 
-  read_csv("../data/fivethirtyeight_datasets/unemployment.csv") %>%
+  read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>%
   janitor::clean_names() %>%
   # year and month are the leading columns
   pivot_longer(
@@ -175,7 +175,7 @@ The third dataset unemployment contains `r nrow(unemployment)` observations of d
 ```{r message = FALSE}
 
 baby_names = 
-  read_csv("../data/popularity of baby names.csv") %>%
+  read_csv("data/popularity of baby names.csv") %>%
   janitor::clean_names() %>% 
   # cancel duplicated rows
   distinct() %>%
